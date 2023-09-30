@@ -16,6 +16,12 @@ def query_repo
     milestones.each do |milestone|
       puts "Milestone: #{milestone.title}"
       puts "Link: #{milestone.html_url}"
+      if milestone.due_on
+        due_date = milestone.due_on.strftime('%Y-%m-%d')
+        puts "Due by: #{due_date}"
+      else
+        puts "No due date set."
+      end
       puts "----------------------------"
 
       issues = client.list_issues(repo, milestone: milestone.number)
@@ -32,7 +38,6 @@ def query_repo
         end
         puts "----------------------------"
       end
-      puts "\n"
     end
 
   rescue Octokit::InvalidRepository => e
