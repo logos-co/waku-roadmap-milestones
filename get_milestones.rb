@@ -3,33 +3,30 @@ require 'dotenv'
 
 Dotenv.load(".env.local")
 
-# Initialize the Octokit client
-Octokit.configure do |c|
-  c.access_token = ENV['GITHUB_TOKEN']  # Make sure you set this environment variable or replace with your token
-end
-
-# Function to query a repository's data
-def query_repo(organization, repo_name)
+def query_repo
   begin
-    # Fetch repository data
-    repo = Octokit.repo("#{organization}/#{repo_name}")
+    client = Octokit::Client.new(access_token: ENV['GITHUB_TOKEN'])
+    repo = "waku-org/pm"
+    milestones = client.list_milestones(repo)
 
-     puts "Repository Name: #{repo.name}"
+    milestones.each do |milestone|
+      puts "Milestone: #{milestone.title}"
+      puts "Link: #{milestone.html_url}"
+      puts "----------------------------"
 
-     # Fetch issues for the repository
-     issues = Octokit.list_issues("#{organization}/#{repo_name}")
- 
-     # Print details about each issue and its labels
-     issues.each do |issue|
-       puts "\nIssue Title: #{issue.title}"
-       puts "Labels: #{issue.labels.map(&:name).join(', ')}"
-     end
-
+      issues = client.list_issues(repo, milestone: milestone.number)
     
+      issues.each do |issue|
+        puts "Issue: #{issue.title}"
+        puts "Link: #{issue.html_url}"
+        puts "----------------------------"
+      end
+      puts "\n"
+    end
+
   rescue Octokit::InvalidRepository => e
     puts "Error: #{e.message}"
   end
 end
 
-# Replace with your desired organization and repository name
-query_repo('waku-org', 'pm')
+query_repo
